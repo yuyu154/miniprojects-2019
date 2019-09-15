@@ -16,7 +16,7 @@ public class User extends BaseEntity {
     private static final int MIN_NAME_LENGTH = 2;
     private static final int MAX_NAME_LENGTH = 10;
     private static final int MIN_PASSWORD_LENGTH = 8;
-    private static final int MAX_PASSWORD_LENGTH = 30;
+    private static final int MAX_PASSWORD_LENGTH = 50;
     private static final String EMAIL_PATTERN = "^.+@.+$";
 
     @Column(name = "name", length = 20, nullable = false)

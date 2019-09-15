@@ -24,6 +24,7 @@ public class FriendService {
     public FriendService(FriendRequestRepository friendRequestRepository,
                          FriendRepository friendRepository,
                          UserService userService) {
+
         this.friendRequestRepository = friendRequestRepository;
         this.friendRepository = friendRepository;
         this.userService = userService;
@@ -32,20 +33,27 @@ public class FriendService {
     public boolean registerFriend(final UserResponseDto requestUser, final FriendRequestDto friendRequested) {
         User sender = userService.findUserById(requestUser.getId());
         User receiver = userService.findUserById(friendRequested.getRequestFriendId());
-        if (friendRequestRepository.existsBySenderAndReceiver(sender, receiver)) {
-            return false;
-        }
+
         return sendFriendRequest(sender, receiver);
     }
 
     private boolean sendFriendRequest(User sender, User receiver) {
-        if (friendRequestRepository.existsBySenderAndReceiver(receiver, sender)) {
+        if (!hasFriendRequest(sender, receiver) && hasFriendRequest(receiver, sender)) {
             friendRequestRepository.deleteBySenderAndReceiver(receiver, sender);
             registerFriend(sender, receiver);
             return true;
         }
+
+        if (hasFriendRequest(sender, receiver)) {
+            return false;
+        }
+
         friendRequestRepository.save(new FriendRequest(sender, receiver));
         return true;
+    }
+
+    private boolean hasFriendRequest(User sender, User receiver) {
+        return friendRequestRepository.existsBySenderAndReceiver(sender, receiver);
     }
 
     private void registerFriend(User sender, User receiver) {
@@ -53,6 +61,7 @@ public class FriendService {
         friendRepository.save(new Friend(receiver, sender));
     }
 
+    // 조회 메소드들
     public Set<UserResponseDto> findFriendsByUserId(final long id) {
         User owner = userService.findUserById(id);
         return this.friendToUserResponseDto(friendRepository.findAllByOwner(owner));
@@ -72,6 +81,7 @@ public class FriendService {
 
     }
 
+    // is 메소드들
     public boolean isMyFriend(final long ownerId, final long slaveId) {
         User owner = userService.findUserById(ownerId);
         User slave = userService.findUserById(slaveId);
@@ -81,7 +91,7 @@ public class FriendService {
     public boolean readyToBeMyFriend(final long senderId, final long receiverId) {
         User sender = userService.findUserById(senderId);
         User receiver = userService.findUserById(receiverId);
-        return friendRequestRepository.existsBySenderAndReceiver(sender, receiver);
+        return hasFriendRequest(sender, receiver);
     }
 
     public Set<UserResponseDto> friendToUserResponseDto(Set<Friend> friends) {

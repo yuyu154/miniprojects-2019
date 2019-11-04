@@ -43,4 +43,8 @@ public class FriendRequest extends BaseEntity {
     public User getReceiver() {
         return receiver;
     }
+
+    public static FriendRequest create(User sender, User receiver) {
+        return new FriendRequest(sender, receiver);
+    }
 }

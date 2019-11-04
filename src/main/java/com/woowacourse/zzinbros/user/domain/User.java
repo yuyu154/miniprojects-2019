@@ -8,6 +8,8 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,7 +18,7 @@ public class User extends BaseEntity {
     private static final int MIN_NAME_LENGTH = 2;
     private static final int MAX_NAME_LENGTH = 10;
     private static final int MIN_PASSWORD_LENGTH = 8;
-    private static final int MAX_PASSWORD_LENGTH = 50;
+    private static final int MAX_PASSWORD_LENGTH = 30;
     private static final String EMAIL_PATTERN = "^.+@.+$";
 
     @Column(name = "name", length = 20, nullable = false)
@@ -33,6 +35,9 @@ public class User extends BaseEntity {
     @JoinColumn(name = "media_file_id", foreignKey = @ForeignKey(name = "fk_user_to_media_file"))
     @OnDelete(action = OnDeleteAction.CASCADE)
     private MediaFile profile;
+
+    @Transient
+    private Set<User> friendRequests = new HashSet<>();
 
     public User() {
     }
@@ -108,5 +113,13 @@ public class User extends BaseEntity {
 
     public MediaFile getProfile() {
         return profile;
+    }
+
+    public boolean receiveFriendRequest(User sender) {
+        if (!friendRequests.contains(sender)) {
+            friendRequests.add(sender);
+            return true;
+        }
+        return false;
     }
 }

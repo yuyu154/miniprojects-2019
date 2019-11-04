@@ -21,8 +21,9 @@ public class UserTest extends UserBaseTest {
     public static final String BASE_EMAIL = "test@example.com";
     public static final String BASE_PASSWORD = "12345678";
 
+    private User sender;
 
-    private User user;
+    private User receiver;
 
     @Autowired
     private UserRepository userRepository;
@@ -32,7 +33,8 @@ public class UserTest extends UserBaseTest {
 
     @BeforeEach
     public void setUp() {
-        user = new User(BASE_NAME, BASE_EMAIL, BASE_PASSWORD);
+        sender = new User(BASE_NAME, BASE_EMAIL, BASE_PASSWORD);
+        receiver = userSampleOf(SAMPLE_TWO);
     }
 
     @Test
@@ -75,16 +77,29 @@ public class UserTest extends UserBaseTest {
         final String updatedEmail = "updated@test.com";
 
         User updatedUser = new User(updatedName, updatedEmail, updatedPassword);
-        user.update(updatedUser);
+        sender.update(updatedUser);
 
-        assertThat(user.getName()).isEqualTo(updatedName);
-        assertThat(user.getEmail()).isEqualTo(updatedEmail);
-        assertThat(user.getPassword()).isEqualTo(updatedPassword);
+        assertThat(sender.getName()).isEqualTo(updatedName);
+        assertThat(sender.getEmail()).isEqualTo(updatedEmail);
+        assertThat(sender.getPassword()).isEqualTo(updatedPassword);
     }
 
     @Test
     @DisplayName("비밀번호 체크")
     public void matchPassword() {
-        assertTrue(user.matchPassword(BASE_PASSWORD));
+        assertTrue(sender.matchPassword(BASE_PASSWORD));
+    }
+
+    @Test
+    @DisplayName("유저가 다른 유저한테 친구 요청을 한다")
+    public void requestFriend() {
+        assertThat(receiver.receiveFriendRequest(sender)).isTrue();
+    }
+
+    @Test
+    @DisplayName("유저가 다른 유저한테 친구 요청을 실패한다")
+    public void requestFriendFail() {
+        assertThat(receiver.receiveFriendRequest(sender)).isTrue();
+        assertThat(receiver.receiveFriendRequest(sender)).isFalse();
     }
 }

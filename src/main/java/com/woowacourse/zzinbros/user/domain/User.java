@@ -39,6 +39,9 @@ public class User extends BaseEntity {
     @Transient
     private Set<User> friendRequests = new HashSet<>();
 
+    @Transient
+    private Set<User> friends = new HashSet<>();
+
     public User() {
     }
 
@@ -95,6 +98,38 @@ public class User extends BaseEntity {
                 && this.password.equals(another.password);
     }
 
+    public boolean receiveFriendRequest(User sender) {
+        if (!hasFriendRequest(sender)) {
+            friendRequests.add(sender);
+            makeFriend(sender);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean hasFriendRequest(User sender) {
+        return friendRequests.contains(sender);
+    }
+
+    private void makeFriend(User sender) {
+        if (canFriend(sender)) {
+            addFriend(sender);
+            sender.addFriend(this);
+        }
+    }
+
+    private boolean canFriend(User sender) {
+        return hasFriendRequest(sender) && sender.hasFriendRequest(this);
+    }
+
+    private void addFriend(User sender) {
+        this.friends.add(sender);
+    }
+
+    public boolean isFriendWith(User friend) {
+        return friends.contains(friend);
+    }
+
     public Long getId() {
         return id;
     }
@@ -113,13 +148,5 @@ public class User extends BaseEntity {
 
     public MediaFile getProfile() {
         return profile;
-    }
-
-    public boolean receiveFriendRequest(User sender) {
-        if (!friendRequests.contains(sender)) {
-            friendRequests.add(sender);
-            return true;
-        }
-        return false;
     }
 }

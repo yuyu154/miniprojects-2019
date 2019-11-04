@@ -1,12 +1,9 @@
 package com.woowacourse.zzinbros.user.domain;
 
-import com.woowacourse.zzinbros.user.domain.repository.FriendRepository;
-import com.woowacourse.zzinbros.user.domain.repository.UserRepository;
 import com.woowacourse.zzinbros.user.exception.IllegalUserArgumentException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -24,12 +21,6 @@ public class UserTest extends UserBaseTest {
     private User sender;
 
     private User receiver;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private FriendRepository friendRepository;
 
     @BeforeEach
     public void setUp() {
@@ -101,5 +92,24 @@ public class UserTest extends UserBaseTest {
     public void requestFriendFail() {
         assertThat(receiver.receiveFriendRequest(sender)).isTrue();
         assertThat(receiver.receiveFriendRequest(sender)).isFalse();
+    }
+
+    @Test
+    @DisplayName("서로 친구 요청을 했을 때 친구 관계가 된다")
+    public void connectFriend() {
+        receiver.receiveFriendRequest(sender);
+        sender.receiveFriendRequest(receiver);
+
+        assertThat(sender.isFriendWith(receiver)).isTrue();
+        assertThat(receiver.isFriendWith(sender)).isTrue();
+    }
+
+    @Test
+    @DisplayName("서로 친구 요청을 하지 않았을 때 친구 관계가 되지 않는다")
+    public void connectFriendFail() {
+        receiver.receiveFriendRequest(sender);
+
+        assertThat(sender.isFriendWith(receiver)).isFalse();
+        assertThat(receiver.isFriendWith(sender)).isFalse();
     }
 }

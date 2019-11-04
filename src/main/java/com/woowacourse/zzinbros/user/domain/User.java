@@ -36,11 +36,17 @@ public class User extends BaseEntity {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private MediaFile profile;
 
-    @Transient
-    private Set<User> friendRequests = new HashSet<>();
+    @OneToMany(mappedBy = "receiver", cascade = CascadeType.PERSIST)
+    private Set<FriendRequest> friendRequests = new HashSet<>();
+
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.PERSIST)
+    private Set<Friend> friends = new HashSet<>();
 
     @Transient
-    private Set<User> friends = new HashSet<>();
+    private Set<User> realFriendRequests = new HashSet<>();
+
+    @Transient
+    private Set<User> realFriends = new HashSet<>();
 
     public User() {
     }
@@ -99,8 +105,12 @@ public class User extends BaseEntity {
     }
 
     public boolean receiveFriendRequest(User sender) {
+        // 친구 요청과 친구 추가를 어떻게 분리해야 하나...
         if (!hasFriendRequest(sender)) {
-            friendRequests.add(sender);
+            realFriendRequests.add(sender);
+
+            friendRequests.add(FriendRequest.create(sender, this));
+
             makeFriend(sender);
             return true;
         }
@@ -108,13 +118,16 @@ public class User extends BaseEntity {
     }
 
     private boolean hasFriendRequest(User sender) {
-        return friendRequests.contains(sender);
+        return realFriendRequests.contains(sender);
     }
 
     private void makeFriend(User sender) {
+        // 서로 친구 추가
         if (canFriend(sender)) {
             addFriend(sender);
             sender.addFriend(this);
+            this.friends.add(Friend.create(this, sender));
+            sender.friends.add(Friend.create(sender, this));
         }
     }
 
@@ -123,11 +136,11 @@ public class User extends BaseEntity {
     }
 
     private void addFriend(User sender) {
-        this.friends.add(sender);
+        this.realFriends.add(sender);
     }
 
     public boolean isFriendWith(User friend) {
-        return friends.contains(friend);
+        return realFriends.contains(friend);
     }
 
     public Long getId() {

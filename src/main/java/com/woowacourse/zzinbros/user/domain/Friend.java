@@ -39,7 +39,7 @@ public class Friend extends BaseEntity {
         this.slave = slave;
     }
 
-    public static Friend of(User owner, User slave) {
+    public static Friend create(User owner, User slave) {
         return new Friend(owner, slave);
     }
 

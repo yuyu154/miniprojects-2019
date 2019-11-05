@@ -36,7 +36,7 @@ public class User extends BaseEntity {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private MediaFile profile;
 
-    @OneToMany(mappedBy = "receiver", cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "receiver", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<FriendRequest> friendRequests = new HashSet<>();
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.PERSIST)
@@ -108,9 +108,7 @@ public class User extends BaseEntity {
         // 친구 요청과 친구 추가를 어떻게 분리해야 하나...
         if (!hasFriendRequest(sender)) {
             realFriendRequests.add(sender);
-
             friendRequests.add(FriendRequest.create(sender, this));
-
             makeFriend(sender);
             return true;
         }

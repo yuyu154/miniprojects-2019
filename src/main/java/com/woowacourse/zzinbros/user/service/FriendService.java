@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class FriendService {
-
     private final FriendRequestRepository friendRequestRepository;
     private final FriendRepository friendRepository;
     private final UserService userService;

@@ -8,6 +8,8 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,7 +18,7 @@ public class User extends BaseEntity {
     private static final int MIN_NAME_LENGTH = 2;
     private static final int MAX_NAME_LENGTH = 10;
     private static final int MIN_PASSWORD_LENGTH = 8;
-    private static final int MAX_PASSWORD_LENGTH = 50;
+    private static final int MAX_PASSWORD_LENGTH = 30;
     private static final String EMAIL_PATTERN = "^.+@.+$";
 
     @Column(name = "name", length = 20, nullable = false)
@@ -33,6 +35,18 @@ public class User extends BaseEntity {
     @JoinColumn(name = "media_file_id", foreignKey = @ForeignKey(name = "fk_user_to_media_file"))
     @OnDelete(action = OnDeleteAction.CASCADE)
     private MediaFile profile;
+
+    @OneToMany(mappedBy = "receiver", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    private Set<FriendRequest> friendRequests = new HashSet<>();
+
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.PERSIST)
+    private Set<Friend> friends = new HashSet<>();
+
+    @Transient
+    private Set<User> realFriendRequests = new HashSet<>();
+
+    @Transient
+    private Set<User> realFriends = new HashSet<>();
 
     public User() {
     }
@@ -88,6 +102,43 @@ public class User extends BaseEntity {
     public boolean isAuthor(User another) {
         return this.email.equals(another.email)
                 && this.password.equals(another.password);
+    }
+
+    public boolean receiveFriendRequest(User sender) {
+        // 친구 요청과 친구 추가를 어떻게 분리해야 하나...
+        if (!hasFriendRequest(sender)) {
+            realFriendRequests.add(sender);
+            friendRequests.add(FriendRequest.create(sender, this));
+            makeFriend(sender);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean hasFriendRequest(User sender) {
+        return realFriendRequests.contains(sender);
+    }
+
+    private void makeFriend(User sender) {
+        // 서로 친구 추가
+        if (canFriend(sender)) {
+            addFriend(sender);
+            sender.addFriend(this);
+            this.friends.add(Friend.create(this, sender));
+            sender.friends.add(Friend.create(sender, this));
+        }
+    }
+
+    private boolean canFriend(User sender) {
+        return hasFriendRequest(sender) && sender.hasFriendRequest(this);
+    }
+
+    private void addFriend(User sender) {
+        this.realFriends.add(sender);
+    }
+
+    public boolean isFriendWith(User friend) {
+        return realFriends.contains(friend);
     }
 
     public Long getId() {

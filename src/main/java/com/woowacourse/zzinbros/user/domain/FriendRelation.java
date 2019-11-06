@@ -15,7 +15,7 @@ import javax.persistence.*;
                 columnNames = {"ONE_USER_ID", "OTHER_USER_ID"},
                 name = "uk_friend_relationship_owner_and_friend")
 )
-public class FriendRelationship extends BaseEntity {
+public class FriendRelation extends BaseEntity {
 
     @ManyToOne(targetEntity = User.class, optional = false)
     @JoinColumn(name = "ONE_USER_ID", foreignKey = @ForeignKey(name = "fk_friend_relationship_from_to_user"),
@@ -34,15 +34,15 @@ public class FriendRelationship extends BaseEntity {
     @JoinColumn(name = "OWNER_USER_ID", foreignKey = @ForeignKey(name = "fk_friend_relationship_owner_to_user"))
     private User owner;
 
-    private FriendRelationship(User one, User other, FriendStatus status, User owner) {
+    private FriendRelation(User one, User other, FriendStatus status, User owner) {
         this.one = one;
         this.other = other;
         this.status = status;
         this.owner = owner;
     }
 
-    public static FriendRelationship createFriendRequest(User from, User to) {
-        return new FriendRelationship(from, to, FriendStatus.REQUEST, from);
+    public static FriendRelation createFriendRequest(User from, User to) {
+        return new FriendRelation(from, to, FriendStatus.REQUEST, from);
     }
 
     public void acceptFriendRequest() {

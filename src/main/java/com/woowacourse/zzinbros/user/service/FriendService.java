@@ -31,23 +31,27 @@ public class FriendService {
     public boolean registerFriend(final UserResponseDto requestUser, final FriendRequestDto friendRequested) {
         User sender = userService.findUserById(requestUser.getId());
         User receiver = userService.findUserById(friendRequested.getRequestFriendId());
-        if (friendRequestRepository.existsBySenderAndReceiver(sender, receiver)) {
+        if (hasFriendRequest(sender, receiver)) {
             return false;
         }
         return sendFriendRequest(sender, receiver);
     }
 
+    private boolean hasFriendRequest(User sender, User receiver) {
+        return friendRequestRepository.existsBySenderAndReceiver(sender, receiver);
+    }
+
     private boolean sendFriendRequest(User sender, User receiver) {
-        if (friendRequestRepository.existsBySenderAndReceiver(receiver, sender)) {
+        if (hasFriendRequest(receiver, sender)) {
             friendRequestRepository.deleteBySenderAndReceiver(receiver, sender);
-            registerFriend(sender, receiver);
+            connectFriend(sender, receiver);
             return true;
         }
         friendRequestRepository.save(new FriendRequest(sender, receiver));
         return true;
     }
 
-    private void registerFriend(User sender, User receiver) {
+    private void connectFriend(User sender, User receiver) {
         friendRepository.save(new Friend(sender, receiver));
         friendRepository.save(new Friend(receiver, sender));
     }
@@ -96,7 +100,7 @@ public class FriendService {
     public boolean readyToBeMyFriend(final long senderId, final long receiverId) {
         User sender = userService.findUserById(senderId);
         User receiver = userService.findUserById(receiverId);
-        return friendRequestRepository.existsBySenderAndReceiver(sender, receiver);
+        return hasFriendRequest(sender, receiver);
     }
 
     public void deleteFriends(UserResponseDto loginUserDto, long friendId) {

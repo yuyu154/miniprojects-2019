@@ -12,37 +12,32 @@ import javax.persistence.*;
 @Entity
 @Table(
         uniqueConstraints = @UniqueConstraint(
-                columnNames = {"ONE_USER_ID", "OTHER_USER_ID"},
+                columnNames = {"SENDER_USER_ID", "RECEIVER_USER_ID"},
                 name = "uk_friend_relationship_owner_and_friend")
 )
 public class FriendRelation extends BaseEntity {
 
     @ManyToOne(targetEntity = User.class, optional = false)
-    @JoinColumn(name = "ONE_USER_ID", foreignKey = @ForeignKey(name = "fk_friend_relationship_from_to_user"),
+    @JoinColumn(name = "SENDER_USER_ID", foreignKey = @ForeignKey(name = "fk_friend_relationship_sender_to_user"),
             nullable = false, updatable = false)
-    private User one;
+    private User sender;
 
     @ManyToOne(targetEntity = User.class, optional = false)
-    @JoinColumn(name = "OTHER_USER_ID", foreignKey = @ForeignKey(name = "fk_friend_relationship_friend_to_user"),
+    @JoinColumn(name = "RECEIVER_USER_ID", foreignKey = @ForeignKey(name = "fk_friend_relationship_receiver_to_user"),
             nullable = false, updatable = false)
-    private User other;
+    private User receiver;
 
     @Enumerated
     private FriendStatus status;
 
-    @ManyToOne(targetEntity = User.class, optional = false)
-    @JoinColumn(name = "OWNER_USER_ID", foreignKey = @ForeignKey(name = "fk_friend_relationship_owner_to_user"))
-    private User owner;
-
-    private FriendRelation(User one, User other, FriendStatus status, User owner) {
-        this.one = one;
-        this.other = other;
+    private FriendRelation(User sender, User receiver, FriendStatus status) {
+        this.sender = sender;
+        this.receiver = receiver;
         this.status = status;
-        this.owner = owner;
     }
 
     public static FriendRelation createFriendRequest(User from, User to) {
-        return new FriendRelation(from, to, FriendStatus.REQUEST, from);
+        return new FriendRelation(from, to, FriendStatus.REQUEST);
     }
 
     public void acceptFriendRequest() {

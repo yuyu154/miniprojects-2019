@@ -32,19 +32,6 @@ class FriendRelationRepositoryTest extends UserBaseTest {
     @Test
     void existsByOneAndOther() {
         friendRelationRepository.save(FriendRelation.createFriendRequest(sender, receiver));
-        assertTrue(friendRelationRepository.existsByOneAndOther(sender, receiver));
-    }
-
-    @Test
-    void existsByOneAndOtherAndOwner() {
-        friendRelationRepository.save(FriendRelation.createFriendRequest(sender, receiver));
-        assertTrue(friendRelationRepository.existsByOneAndOtherAndOwner(sender, receiver, sender));
-    }
-
-    @Test
-    void findFriendRelation() {
-        FriendRelation expected =
-                friendRelationRepository.save(FriendRelation.createFriendRequest(sender, receiver));
-        assertThat(friendRelationRepository.findOppositeFriendRelation(receiver, sender)).isEqualTo(expected);
+        assertTrue(friendRelationRepository.existsBySenderAndReceiver(sender, receiver));
     }
 }

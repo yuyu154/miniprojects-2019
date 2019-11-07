@@ -11,10 +11,9 @@ public class FriendRelationTest extends UserBaseTest {
         User one = userSampleOf(SAMPLE_ONE);
         User other = userSampleOf(SAMPLE_TWO);
         FriendRelation friendRelation = FriendRelation.createFriendRequest(one, other);
-        assertThat(friendRelation.getOne()).isEqualTo(one);
-        assertThat(friendRelation.getOther()).isEqualTo(other);
+        assertThat(friendRelation.getSender()).isEqualTo(one);
+        assertThat(friendRelation.getReceiver()).isEqualTo(other);
         assertThat(friendRelation.getStatus()).isEqualTo(FriendStatus.REQUEST);
-        assertThat(friendRelation.getOwner()).isEqualTo(one);
     }
 
     @Test
